@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const path = require('path');
 
 const coverImageBasePath = 'upload/bookCovers'
 
@@ -36,4 +37,4 @@ const bookSchema = new mongoose.Schema({
 
 
 module.exports = mongoose.model('Books', bookSchema);
-module.exports.coverImageBasePath = coverImageBasePath;
+module.exports.coverImageBasePath = coverImageBasePath

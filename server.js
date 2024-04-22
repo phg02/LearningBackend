@@ -5,7 +5,8 @@ const expressLayouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
 
 const indexRouter = require('./routes/index');// import route or index
-const authorRouter = require('./routes/authors')
+const authorRouter = require('./routes/authors');
+const bookRouter = require('./routes/books')
 
 //setting up mongoose
 mongoose.connect(process.env.MONGO_URL);
@@ -21,6 +22,7 @@ app.use(express.static('public'));
 app.use(express.urlencoded({limit: '10mb', extended: false}))
 
 app.use('/', indexRouter);// use router of index.js from folder routes
-app.use('/authors', authorRouter)
+app.use('/authors', authorRouter);
+app.use('/books', bookRouter)
 
 app.listen(process.env.PORT || 3000);

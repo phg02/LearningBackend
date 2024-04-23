@@ -15,7 +15,31 @@ const upload = multer({
 
 // All books
 router.get('/', async (req, res)=>{
-   res.send('all');
+    let query = Book.find(); //create an mongo query that is not yet executed
+    if(req.query.title != null && req.query.title != ''){ // checking if the title form is empty or not
+        query = query.regex('title', new RegExp(req.query.title, 'i')); //add condition to the query in this case adding regex expression
+    }
+    if(req.query.publishedBefore != null && req.query.publishedBefore != ''){ // checking if the publishedBefore form is empty or not
+        query = query.lte('publishedDate', req.query.publishedBefore); //add condition to the query in this case adding regex expression
+        console.log(req.query.publishedBefore)
+    }
+    
+    if(req.query.publishedAfter != null && req.query.publishedAfter != ''){ // checking if the publishedBefore form is empty or not
+        query = query.gte('publishedDate', req.query.publishedAfter); //add condition to the query in this case adding regex expression
+        console.log(req.query.publishedAfter);  
+    }
+    
+   try{
+    const books = await query.exec();
+    res.render('books/index', {
+        books: books,
+        searchOptions: req.query,
+       });
+   }
+   catch(err){
+     res.redirect('/');
+     console.log(err);
+   }
 });
 
 // New books
@@ -26,7 +50,7 @@ router.get('/new', async (req, res)=>{
 //Create new book
 router.post('/', upload.single('cover'), async (req, res)=>{ // cover is the name of input type file
     const fileName = req.file != null ? req.file.filename : null;//check if filename is null or get filename
-    console.log(`author: ${req.body.author}`)
+    console.log(`author: ${req.body.publishDate}`)
     const book = new Book({
         title: req.body.title,
         author: req.body.author,
@@ -41,14 +65,20 @@ router.post('/', upload.single('cover'), async (req, res)=>{ // cover is the nam
         res.redirect("books");
     }
     catch(err){
-        renderNewPage(res, book, true);
-        console.log('from here');
-        console.log(err);
+        if(book.coverImageName != null){ // if error occur when saving the book check if image is uploaded
+            removeBookCover(book.coverImageName);//delete the uploaded image using a function
+        }
+        renderNewPage(res, book, true);//render page with book added  and error
     }
     
 });  
+function removeBookCover(fileName){ //function that delete the image if save book failed
+    fs.unlink(path.join(uploadPath, fileName), err =>{
+        if(err) {console.log(err)}
+    });
+}
 
-async function renderNewPage(res, book, hasError = false){
+async function renderNewPage(res, book, hasError = false){ // render the books page and new book page
     try{
         const authors = await Author.find({});
         const book = new Book({})

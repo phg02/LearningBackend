@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const path = require('path');
+const path = require('path');// use for the path.join
 
-const coverImageBasePath = 'upload/bookCovers'
+const coverImageBasePath = 'upload/bookCovers' // path store image automatically create when inititate
 
 const bookSchema = new mongoose.Schema({
     title: {
@@ -32,6 +32,12 @@ const bookSchema = new mongoose.Schema({
         ref: 'Author'
     }
 
+});
+
+bookSchema.virtual('coverImagePath').get(function() {
+    if(this.coverImageName != null){
+        return path.join('/',coverImageBasePath, this.coverImageName); //binding stuff to get an image path / + folder + fileName
+    }
 })
 
 

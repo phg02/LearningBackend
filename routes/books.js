@@ -20,12 +20,12 @@ router.get('/', async (req, res)=>{
         query = query.regex('title', new RegExp(req.query.title, 'i')); //add condition to the query in this case adding regex expression
     }
     if(req.query.publishedBefore != null && req.query.publishedBefore != ''){ // checking if the publishedBefore form is empty or not
-        query = query.lte('publishedDate', req.query.publishedBefore); //add condition to the query in this case adding regex expression
+        query = query.lte('publishDate', req.query.publishedBefore); //add condition to the query in this case adding regex expression
         console.log(req.query.publishedBefore)
     }
     
     if(req.query.publishedAfter != null && req.query.publishedAfter != ''){ // checking if the publishedBefore form is empty or not
-        query = query.gte('publishedDate', req.query.publishedAfter); //add condition to the query in this case adding regex expression
+        query = query.gte('publishDate', req.query.publishedAfter); //add condition to the query in this case adding regex expression
         console.log(req.query.publishedAfter);  
     }
     
@@ -50,7 +50,6 @@ router.get('/new', async (req, res)=>{
 //Create new book
 router.post('/', upload.single('cover'), async (req, res)=>{ // cover is the name of input type file
     const fileName = req.file != null ? req.file.filename : null;//check if filename is null or get filename
-    console.log(`author: ${req.body.publishDate}`)
     const book = new Book({
         title: req.body.title,
         author: req.body.author,

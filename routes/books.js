@@ -2,16 +2,16 @@ const express = require('express');
 const router = express.Router();
 const Book = require('../models/book');
 const Author = require('../models/author');
-const path = require('path')
-const multer = require('multer');// multer for file upload
-const uploadPath = path.join('public', Book.coverImageBasePath); // creating file path to upload img
+// const path = require('path');
+// const multer = require('multer');// multer for file upload
+// const uploadPath = path.join('public', Book.coverImageBasePath); // creating file path to upload img
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];// array of types of format that are allowed
-const upload = multer({
-    dest: uploadPath,
-    fileFilter: (req, file, callback)=>{
-        callback(null, imageMimeTypes.includes(file.mimetype)); // set up file type that we accept
-    }
-});
+// const upload = multer({
+//     dest: uploadPath,
+//     fileFilter: (req, file, callback)=>{
+//         callback(null, imageMimeTypes.includes(file.mimetype)); // set up file type that we accept
+//     }
+// });
 
 // All books
 router.get('/', async (req, res)=>{
@@ -48,7 +48,7 @@ router.get('/new', async (req, res)=>{
 });
 
 //Create new book
-router.post('/', upload.single('cover'), async (req, res)=>{ // cover is the name of input type file
+router.post('/', async (req, res)=>{ // cover is the name of input type file
     const fileName = req.file != null ? req.file.filename : null;//check if filename is null or get filename
     const book = new Book({
         title: req.body.title,
@@ -58,6 +58,7 @@ router.post('/', upload.single('cover'), async (req, res)=>{ // cover is the nam
         coverImageName: fileName, 
         description: req.body.description
     })
+    saveCover(book, req.body.cover);
     console.log(book);
     try{
         const newbook = await book.save();
@@ -71,11 +72,11 @@ router.post('/', upload.single('cover'), async (req, res)=>{ // cover is the nam
     }
     
 });  
-function removeBookCover(fileName){ //function that delete the image if save book failed
-    fs.unlink(path.join(uploadPath, fileName), err =>{
-        if(err) {console.log(err)}
-    });
-}
+// function removeBookCover(fileName){ //function that delete the image if save book failed
+//     fs.unlink(path.join(uploadPath, fileName), err =>{
+//         if(err) {console.log(err)}
+//     });
+// }
 
 async function renderNewPage(res, book, hasError = false){ // render the books page and new book page
     try{
@@ -92,6 +93,15 @@ async function renderNewPage(res, book, hasError = false){ // render the books p
     }
     catch{
         res.redirect('/books')
+    }
+}
+
+function saveCover(book, coverEncoded){
+    if(coverEncoded == null) return
+    const cover = JSON.parse(coverEncoded); 
+    if(cover != null && imageMimeTypes.includes(cover.type)){//checking if file is in the correct format
+        book.coverImage = new Buffer.from(cover.data, 'base64');
+        book.coverImageType = cover.type;
     }
 }
 

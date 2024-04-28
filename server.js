@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const expressLayouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
+const methodOverride = require('method-override');
 
 const indexRouter = require('./routes/index');// import route or index
 const authorRouter = require('./routes/authors');
@@ -19,6 +20,7 @@ app.set('views', __dirname+"/views"); //setting up views folder
 app.set('layout', 'layouts/layout'); // settin up layout (optional)
 app.use(expressLayouts); // optional(help for repetitve header and and footer)
 app.use(express.static('public'));
+app.use(methodOverride('_method'));
 app.use(express.urlencoded({limit: '10mb', extended: false}))
 
 app.use('/', indexRouter);// use router of index.js from folder routes

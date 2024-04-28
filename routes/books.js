@@ -55,7 +55,7 @@ router.post('/', async (req, res)=>{ // cover is the name of input type file
         author: req.body.author,
         publishDate: new Date(req.body.publishDate),
         pageCount: req.body.pageCount,
-        coverImageName: fileName, 
+        // coverImageName: fileName, 
         description: req.body.description
     })
     saveCover(book, req.body.cover);
@@ -65,9 +65,9 @@ router.post('/', async (req, res)=>{ // cover is the name of input type file
         res.redirect("books");
     }
     catch(err){
-        if(book.coverImageName != null){ // if error occur when saving the book check if image is uploaded
-            removeBookCover(book.coverImageName);//delete the uploaded image using a function
-        }
+        // if(book.coverImageName != null){ // if error occur when saving the book check if image is uploaded
+        //     removeBookCover(book.coverImageName);//delete the uploaded image using a function
+        // }
         renderNewPage(res, book, true);//render page with book added  and error
     }
     

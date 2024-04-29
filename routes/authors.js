@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Author = require('../models/author');
+const Book = require('../models/book');
+const { findById } = require('../models/book');
 
 // All router au
 router.get('/', async (req, res)=>{
@@ -45,8 +47,17 @@ router.post('/', async (req, res)=>{
     //     .catch((err) => res.render('authors/new',{ author: author, errorMessage:'Error creating Author'}))        
 })
 
-router.get('/:id', (req, res)=>{
-    res.send(`show author: ${req.params.id}`)
+router.get('/:id', async (req, res)=>{
+    try{
+        console.log(req.params.id);
+        const author = await Author.findById(req.params.id);
+        console.log(author.name);
+        const books = await Book.find({author: author.id}).limit(6).exec();
+        res.render('authors/show', {author:author, booksByAuthor : books})
+    }
+    catch{
+        res.redirect('/')
+    }
 })
 router.get('/:id/edit', async (req, res)=>{
     try{

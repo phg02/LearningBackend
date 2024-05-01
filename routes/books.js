@@ -62,7 +62,7 @@ router.post('/', async (req, res)=>{ // cover is the name of input type file
     console.log(book);
     try{
         const newbook = await book.save();
-        res.redirect("books");
+        res.redirect(`books/${newbook.id}`);
     }
     catch(err){
         // if(book.coverImageName != null){ // if error occur when saving the book check if image is uploaded
@@ -71,7 +71,74 @@ router.post('/', async (req, res)=>{ // cover is the name of input type file
         renderNewPage(res, book, true);//render page with book added  and error
     }
     
-});  
+});
+
+router.get('/:id', async (req, res)=>{
+    try{
+        const book = await Book.findById(req.params.id).populate('author').exec();
+        res.render('books/show', {book : book})
+    }
+    catch{
+        res.redirect('/')
+    }
+});
+
+//edit book 
+router.get('/:id/edit', async (req, res)=>{
+    try{
+        const book = await Book.findById(req.params.id);
+        renderEditPage(res, book)
+    }
+    catch{
+        res.redirect('/')
+    }
+ });
+
+//Update book
+ router.put('/:id', async (req, res)=>{ // cover is the name of input type file
+    //up to here 
+    let book
+    try{
+        book = await Book.findById(req.params.id);
+        book.title = req.body.title;
+        book.author = req.body.author;
+        book.publishDate =new Date (req.body.publishDate);
+        book.pageCount = req.body.pageCount;
+        book.description = req.body.description;
+        if(req.body.cover != null && req.body.cover !== ''){
+            saveCover(book, req.body.cover)
+        }
+        await book.save();
+        res.redirect(`/books/${book.id}`);
+    }
+    catch{
+        if(book != null){
+            renderEditPage(res, book, true)
+        }
+        else{
+            redirect('/')
+        }
+    }
+    
+});
+
+// delete book
+router.delete('/:id', async (req, res)=>{
+    let book;
+    try{
+        book = await Book.findById(req.params.id);
+        await book.deleteOne();
+        res.redirect('/books')
+    }
+    catch{
+        if(book != null){
+            res.render('books/show', {book : book, errorMessage: 'Could not delete book'});
+        }
+        else{
+            res.redirect('/')
+        }
+    }
+})
 // function removeBookCover(fileName){ //function that delete the image if save book failed
 //     fs.unlink(path.join(uploadPath, fileName), err =>{
 //         if(err) {console.log(err)}
@@ -79,21 +146,7 @@ router.post('/', async (req, res)=>{ // cover is the name of input type file
 // }
 
 async function renderNewPage(res, book, hasError = false){ // render the books page and new book page
-    try{
-        const authors = await Author.find({});
-        const book = new Book({})
-        const params = {
-            authors: authors, 
-            book: book
-        }
-        if(hasError){
-            params.errorMessage = 'Error Creating Book';
-        }
-        res.render('books/new', params)
-    }
-    catch{
-        res.redirect('/books')
-    }
+    renderFormPage(res, book, 'new', hasError)
 }
 
 function saveCover(book, coverEncoded){
@@ -104,5 +157,35 @@ function saveCover(book, coverEncoded){
         book.coverImageType = cover.type;
     }
 }
+
+
+async function renderEditPage(res, book, hasError = false){ // render the books page and new book page
+    renderFormPage(res, book, 'edit', hasError)
+}
+
+async function renderFormPage(res, book,form, hasError = false){ // render the books page and new book page
+    try{
+        const authors = await Author.find({});
+        const params = {
+            authors: authors, 
+            book: book
+        }
+        
+        if(hasError){
+           if(form == 'edit'){
+            params.errorMessage = 'Error Editing Book';
+           }
+           else{
+            params.errorMessage = 'Error Creating Book';
+           }
+        }
+        res.render(`books/${form}`, params)
+    }
+    catch{
+        res.redirect('/books')
+    }
+}
+
+
 
 module.exports = router;
